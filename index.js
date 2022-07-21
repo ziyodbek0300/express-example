@@ -6,21 +6,10 @@ require('dotenv').config()
 const mongoose = require('mongoose')
 const userSchema = require('./schema')
 const User = mongoose.model('user', userSchema, 'user')
+const bp = require('body-parser')
 
-// async function createUser(name, age, gender, date) {
-//     try {
-//         await mongoose.connect(process.env.connectionString);
-//         return new User({
-//             name,
-//             age,
-//             gender,
-//             date,
-//             created: Date.now()
-//         }).save()
-//     } catch (e) {
-
-//     }
-// }
+app.use(bp.json())
+app.use(bp.urlencoded({ extended: true }))
 
 mongoose
     .connect(process.env.connectionString)
@@ -37,16 +26,20 @@ app.get('/users', async (req, res) => {
     res.send(all)
 })
 
-// app.get('/about', async (req, res) => {
-//     console.log("asdfsd");
-//     try {
-//         await User.find({}).then(u => {
-//             console.log(u);
-//         })
-//     } catch (e) {
-//         console.log(e);
-//     }
-//     res.send({ message: "Hello" });
-// })
+app.post("/register", (req, res) => {
+    console.log(req.body);
+    User.findOne({ username: req.body.username }).then((user) => {
+        if (user) {
+            return res.status(400).json({ username: "Username is already registered!" })
+        } else {
+            const newUser = new User({
+                username: req.body.username,
+                password: req.body.password,
+            });
+            newUser.save();
+            return res.status(200).json({ data: newUser });
+        }
+    });
+});
 
 app.listen(5000, () => console.log("Server is running..."))
