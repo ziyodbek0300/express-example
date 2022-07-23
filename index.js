@@ -24,10 +24,9 @@ mongoose
 app.get('/users', async (req, res) => {
     const all = await User.find();
     res.send(all)
-})
+});
 
 app.post("/register", (req, res) => {
-    console.log(req.body);
     User.findOne({ username: req.body.username }).then((user) => {
         if (user) {
             return res.status(400).json({ username: "Username is already registered!" })
@@ -41,5 +40,20 @@ app.post("/register", (req, res) => {
         }
     });
 });
+
+app.post("/login", (req, res) => {
+    User.findOne({ username: req.body.username }).then((user) => {
+        if (!user) {
+            return res.status(400).json({ username: "Username is not registered!" })
+        } else {
+            if (user.password === req.body.password) {
+                return res.status(200).json({ data: user });
+            } else {
+                return res.status(400).json({ password: "Password is incorrect!" })
+            }
+        }
+    });
+});
+
 
 app.listen(5000, () => console.log("Server is running..."))
